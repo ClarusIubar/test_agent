@@ -1,4 +1,4 @@
-from agent_graph.core.llm import get_llm
+from llm import get_llm
 
 llm = get_llm()
 
