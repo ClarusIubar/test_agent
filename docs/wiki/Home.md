@@ -42,4 +42,6 @@
 - [llm_smoke_test.py](../../llm_smoke_test.py): LLM 스모크 테스트
 
 ## 검증
-- D:/miniconda3/envs/langgraph/python.exe -m unittest discover -s tests -v
+- python -m unittest discover -s tests -v
+
+참고: 가상환경을 사용 중이면 해당 환경을 활성화한 뒤 실행합니다.

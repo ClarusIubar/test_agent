@@ -53,7 +53,9 @@ LangGraph 기반 챗봇 예제입니다. 현재 실행 진입점은 하나이며
 - [scripts/tavily_registry_smoke.py](scripts/tavily_registry_smoke.py): Tavily 레지스트리 스모크 테스트
 
 ## 테스트
-- D:/miniconda3/envs/langgraph/python.exe -m unittest discover -s tests -v
+- python -m unittest discover -s tests -v
+
+선택: 특정 가상환경 파이썬을 직접 지정하려면 환경에 맞는 인터프리터 경로를 사용하세요.
 
 ## 위키
 - 위키 원문(저장소 내): [docs/wiki/Home.md](docs/wiki/Home.md)
