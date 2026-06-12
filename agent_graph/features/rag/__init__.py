@@ -9,7 +9,7 @@ from .nodes import (
     create_transform_query,
     create_web_tool_node,
 )
-from .retriever import RetrieverBundle, create_retriever_tool
+from .retriever import RetrieverBundle, create_retriever_tool, create_retriever_tools_from_config
 
 __all__ = [
     "build_rag_agent_graph",
@@ -19,6 +19,7 @@ __all__ = [
     "create_generate",
     "create_rag_tool_node",
     "create_retriever_tool",
+    "create_retriever_tools_from_config",
     "RetrieverBundle",
     "create_transform_query",
     "create_web_tool_node",

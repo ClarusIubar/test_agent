@@ -3,3 +3,7 @@
 **/__pycache__/
 *.py[cod]
 .local/
+.chroma_db/
+chroma_db/
+.pytest_cache/
+한글맞춤법 표준어규정 해설.pdf

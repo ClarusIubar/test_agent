@@ -44,16 +44,26 @@ def create_web_tool_node(tavily_tool: Any):
     return web_search
 
 
-def create_rag_tool_node(retriever: Any):
-    """Chroma 문서 검색 노드를 반환한다."""
+def create_rag_tool_node(retrievers_by_tool_name: dict[str, Any]):
+    """Chroma 문서 검색 노드를 반환한다.
+
+    Args:
+        retrievers_by_tool_name: tool_name -> retriever 매핑
+    """
 
     def rag_search(state: Any) -> dict:
         print("----- [RAG SEARCH] -----")
         messages = state.messages if hasattr(state, "messages") else state.get("messages", [])
         last_message = messages[-1]
         tool_call = last_message.tool_calls[0]
+        tool_name = tool_call.get("name", "pdf_search")
         query = tool_call["args"].get("query", "")
         tool_call_id = tool_call["id"]
+
+        retriever = retrievers_by_tool_name.get(tool_name)
+        if retriever is None:
+            # 안전장치: 단일 소스 구성일 때 기본 retriever로 fallback
+            retriever = next(iter(retrievers_by_tool_name.values()))
 
         docs = retriever.invoke(query)
         context = ""
@@ -63,7 +73,7 @@ def create_rag_tool_node(retriever: Any):
 
         tool_message = ToolMessage(
             content=context,
-            name="pdf_search",
+            name=tool_name,
             tool_call_id=tool_call_id,
         )
         return {

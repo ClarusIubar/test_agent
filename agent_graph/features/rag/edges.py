@@ -27,7 +27,7 @@ def route_to_search(state: Any) -> str:
     tool_name = tool_calls[0].get("name", "") if isinstance(tool_calls[0], dict) else tool_calls[0].name
     if tool_name == "tavily_search":
         return "web_search"
-    if tool_name == "pdf_search":
+    if tool_name.startswith("pdf_search"):
         return "rag_search"
     return END
 
