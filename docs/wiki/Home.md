@@ -21,25 +21,27 @@
 
 ## 동작 흐름
 1. [graph.py](../../graph.py) 가 질문 문자열을 InputState로 변환
-2. [agent_graph/core/graph_definition.py](../../agent_graph/core/graph_definition.py) 에서 그래프 실행
-3. [chatbot.py](../../chatbot.py) 가 답변 생성 및 필요 시 tool_calls 구성
-4. 최종 answer 문자열 출력
-
-## search: 접두사 규칙
-- 질문이 search: 로 시작하면 Tavily 검색 도구 경로를 사용합니다.
-- 구현 위치: [chatbot.py](../../chatbot.py#L24)
+2. [agent_graph/features/rag/graph.py](../../agent_graph/features/rag/graph.py) 에서 RAG 그래프 실행
+3. [chatbot.py](../../chatbot.py) 가 LLM을 통해 웹검색(tavily_search) 또는 문서검색(pdf_search) 도구 자동 선택
+4. 검색 결과 정리 → 관련성 평가 → 질문 재작성(필요 시) → 답변 생성 → 환각 체크 → 최종 answer 출력
+5. 상세 흐름: [RAG 통합 문서](RAG-Integration.md)
 
 ## 환경 변수
-- OpenAI 키: OPENAI_API_KEY
-- Tavily 키: TAVILY_API_KEY
-- 예시 파일: [ .env.example ](../../.env.example)
+- OpenAI 키: `OPENAI_API_KEY`
+- Tavily 키: `TAVILY_API_KEY`
+- Chroma DB 경로: `CHROMA_DB_PATH` (예: `./rag_agent/chroma_db`)
+- Chroma 컬렉션: `CHROMA_COLLECTION_NAME` (예: `korean_pdf`)
+- 예시 파일: [.env.example](../../.env.example)
 
 ## 루트 파일 설명
 - [graph.py](../../graph.py): 실행 진입점
-- [chatbot.py](../../chatbot.py): 챗봇 노드
+- [chatbot.py](../../chatbot.py): 챗봇 노드 (LLM bind_tools 기반)
 - [state.py](../../state.py): 상태 스키마
 - [llm.py](../../llm.py): 모델 초기화
 - [llm_smoke_test.py](../../llm_smoke_test.py): LLM 스모크 테스트
+
+## 관련 문서
+- [RAG 통합 설계](RAG-Integration.md)
 
 ## 검증
 - python -m unittest discover -s tests -v

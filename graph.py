@@ -1,43 +1,65 @@
+import os
 import sys
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
+from dotenv import load_dotenv
+from langchain_tavily import TavilySearch
 from langgraph.graph.state import CompiledStateGraph
 
 from agent_graph.core import (
-    TavilyAdapter,
-    ToolRegistry,
-    build_agent_graph,
     run_ainvoke,
     run_astream,
     run_invoke,
     run_stream,
 )
-from chatbot import chatbot
+from agent_graph.features.rag import (
+    build_rag_agent_graph,
+    create_check_hallucinations,
+    create_context_organizer,
+    create_decide_to_generate,
+    create_generate,
+    create_rag_tool_node,
+    create_retriever_tool,
+    create_transform_query,
+    create_web_tool_node,
+)
+from chatbot import create_chatbot_node
+from llm import get_llm
 from state import InputState, OutputState, OverallState
 
 
-def build_graph(
-    chatbot_node: Any = None,
-    tool_registry: ToolRegistry | None = None,
-) -> CompiledStateGraph:
-    active_chatbot = chatbot_node or chatbot
-    return build_agent_graph(
+def build_default_graph() -> CompiledStateGraph:
+    load_dotenv()
+    llm = get_llm()
+
+    # Tavily 웹검색 도구
+    tavily_tool = TavilySearch(max_results=3)
+
+    # Chroma 문서 검색 도구 (환경변수로 경로/컬렉션 주입)
+    db_path = os.environ.get("CHROMA_DB_PATH", "./chroma_db")
+    collection_name = os.environ.get("CHROMA_COLLECTION_NAME", "korean_pdf")
+    bundle = create_retriever_tool(db_path=db_path, collection_name=collection_name)
+
+    # chatbot 노드: 두 도구를 모두 바인딩 (LangChain BaseTool 사용)
+    chatbot_node = create_chatbot_node(llm=llm, tools=[tavily_tool, bundle.tool])
+
+    return build_rag_agent_graph(
         state_schema=OverallState,
         input_schema=InputState,
         output_schema=OutputState,
-        chatbot_node=active_chatbot,
-        tool_registry=tool_registry,
+        chatbot_node=chatbot_node,
+        web_tool_node=create_web_tool_node(tavily_tool),
+        rag_tool_node=create_rag_tool_node(bundle.retriever),
+        context_organizer_node=create_context_organizer(llm),
+        transform_query_node=create_transform_query(llm),
+        generate_node=create_generate(llm),
+        decide_to_generate_fn=create_decide_to_generate(llm),
+        check_hallucinations_fn=create_check_hallucinations(llm),
     )
 
 
-def build_default_tool_registry() -> ToolRegistry:
-    registry = ToolRegistry()
-    registry.register(TavilyAdapter(max_results=3))
-    return registry
-
-
-graph = build_graph(tool_registry=build_default_tool_registry())
+graph = build_default_graph()
 
 
 def invoke_graph(
